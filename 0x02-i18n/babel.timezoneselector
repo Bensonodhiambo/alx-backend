@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Flask app with prioritized locale selection."""
+"""Flask app with prioritized timezone selection."""
 from flask import Flask, render_template, request, g
 from flask_babel import Babel, _
+import pytz
+from pytz.exceptions import UnknownTimeZoneError
 
 app = Flask(__name__)
 
@@ -38,21 +40,36 @@ def before_request():
 @babel.localeselector
 def get_locale():
     """Determine the best match for supported languages."""
-    # 1. Check for locale in URL parameters
     locale = request.args.get("locale")
     if locale in app.config['LANGUAGES']:
         return locale
-    
-    # 2. Check for locale in user settings
     if g.user and g.user.get("locale") in app.config['LANGUAGES']:
         return g.user.get("locale")
-    
-    # 3. Check for locale in the request header
     return request.accept_languages.best_match(app.config["LANGUAGES"])
+
+@babel.timezoneselector
+def get_timezone():
+    """Determine the best match for time zones."""
+    timezone = request.args.get("timezone")
+    if timezone:
+        try:
+            return pytz.timezone(timezone).zone
+        except UnknownTimeZoneError:
+            pass
+
+    if g.user:
+        user_timezone = g.user.get("timezone")
+        if user_timezone:
+            try:
+                return pytz.timezone(user_timezone).zone
+            except UnknownTimeZoneError:
+                pass
+
+    return app.config['BABEL_DEFAULT_TIMEZONE']
 
 @app.route("/")
 def index():
-    return render_template("6-index.html")
+    return render_template("7-index.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
