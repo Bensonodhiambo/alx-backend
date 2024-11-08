@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Flask app with Babel for language selection"""
+"""Flask app with Babel for localized template messages"""
 
 from flask import Flask, render_template, request
-from flask_babel import Babel
+from flask_babel import Babel, _
 
 class Config:
     """Config class for setting app configurations."""
@@ -23,8 +23,9 @@ def get_locale():
 
 @app.route('/')
 def index():
-    """Render the welcome page with Babel support."""
-    return render_template('2-index.html')
+    """Render the home page with localized messages."""
+    return render_template('3-index.html')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
